@@ -60,6 +60,78 @@ After copying, verify that you have the right data in your directory with ```ls`
 
 ## Read-based taxonomy
 
+Make a directory & enter
+```
+mkdir /scratch/project_2001499/$USER/03_TAXONOMY
+
+cd /scratch/project_2001499/$USER/03_TAXONOMY
+```
+Load module & run Metaphlan using the array script after making any adjustments to the script if needed.
+```
+#!/bin/bash
+#SBATCH --job-name=metaphlan
+#SBATCH --account=project_2001499
+#SBATCH --partition=small
+#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --array=0-$(($(ls /scratch/project_2001499/Data/Illumina/*.R1.fastq.gz | wc -l)-1))
+#SBATCH --output=logs/metaphlan_%A_%a.out
+#SBATCH --error=logs/metaphlan_%A_%a.err
+
+module load metaphlan
+
+THREADS=8
+DB=/scratch/project_2001499/DBs/metaphlan
+INPUT_DIR=/scratch/project_2001499/Data/Illumina/
+OUT_DIR=./metaphlan_results
+
+mkdir -p ${OUT_DIR}
+mkdir -p logs
+
+# Create array of R1 files
+R1_FILES=(${INPUT_DIR}/*.R1.fastq.gz)
+
+# Select current sample based on SLURM array task ID
+R1=${R1_FILES[$SLURM_ARRAY_TASK_ID]}
+
+# Extract sample name
+SAMPLE=$(basename ${R1} .R1.fastq.gz)
+
+# Define matching R2
+R2=${INPUT_DIR}/${SAMPLE}.R2.fastq.gz
+
+echo "Processing ${SAMPLE} ..."
+echo "R1: ${R1}"
+echo "R2: ${R2}"
+
+metaphlan \
+    ${R1},${R2} \
+    --input_type fastq \
+    --nproc ${THREADS} \
+    --mapout ${OUT_DIR}/${SAMPLE}.mapout.txt \
+    --db_dir ${DB} \
+    -o ${OUT_DIR}/${SAMPLE}_profile.txt
+
+echo "Finished ${SAMPLE}"
+```
+Merge files
+```
+ merge_metaphlan_tables.py ./metaphlan_results/*_profile.txt
+```
+Open interactive session on Puhti with R-studio for 6h with the default settings, alternatively use the small queue with 4 MB memory, 4 cores, and no NVMe and 6h time.
+
+Google how to install the mia package Bioc-release.
+
+Install the mia package, answer "y" when prompted.
+
+Load the mia and ggplot2 packages and set your working directory
+```
+library(mia)
+library(ggplot2)
+setwd("/scratch/project_2001499/myusername/metaphlan")
+```
+
 ## Viromics
 
 Make a directory for all virus analyses in your own directory:
