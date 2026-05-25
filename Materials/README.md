@@ -1,4 +1,4 @@
-# Self-leraning materials for the course
+# Self-learning materials for the course
 
 The listed materials are supposed to be read before the course day as an introduciton to the topic. This way we aim to have less lectures and more hands-on time during the course days. The materials are not mandatory, but they will help you to get the most out of the course. The materials are also a good way to prepare for the practicals, as they will give you an idea of what we will be doing during the practicals.
 
